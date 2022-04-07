@@ -9,10 +9,12 @@ import org.bukkit.map.MapCanvas;
 import org.bukkit.map.MapPalette;
 import org.bukkit.map.MapRenderer;
 import org.bukkit.map.MapView;
+import org.bukkit.scoreboard.Team;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.io.IOException;
+import java.util.ArrayList;
 
 public class BoardRenderer extends MapRenderer {
 
@@ -39,7 +41,7 @@ public class BoardRenderer extends MapRenderer {
             }
         }
 
-        if(player.getName().equals("Honigbrai")) {
+        if(player.getName().equals("honigbrai")) {
             canvas.drawImage(0,0, gengar);
             return;
         }
@@ -110,11 +112,14 @@ public class BoardRenderer extends MapRenderer {
 
     public void updateImages() {
         try {
-            for (int i = 0; i < game.getItems().length; i++) {
-                images[i] = ImageIO.read(plugin.getResource("assets/textures/" + game.getItems()[i].getAsset()));
+            ArrayList<Team> teams = teamManager.getTeams();
+            for (Team team : teams) {
+                for (int i = 0; i < game.getItems(team).length; i++) {
+                    images[i] = ImageIO.read(plugin.getResource("assets/textures/" + game.getItems(team)[i].getAsset()));
+                }
+                checkmark = ImageIO.read(plugin.getResource("assets/checkmark.png"));
+                gengar = MapPalette.resizeImage(ImageIO.read(plugin.getResource("assets/gengar.png")));
             }
-            checkmark = ImageIO.read(plugin.getResource("assets/checkmark.png"));
-            gengar = MapPalette.resizeImage(ImageIO.read(plugin.getResource("assets/gengar.png")));
         } catch (IOException e) {
             e.printStackTrace();
         }

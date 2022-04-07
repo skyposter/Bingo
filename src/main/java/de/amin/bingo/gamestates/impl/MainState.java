@@ -15,15 +15,15 @@ import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.MapMeta;
 import org.bukkit.map.MapRenderer;
 import org.bukkit.map.MapView;
 import org.bukkit.scheduler.BukkitTask;
-import org.bukkit.scoreboard.DisplaySlot;
-import org.bukkit.scoreboard.Objective;
-import org.bukkit.scoreboard.RenderType;
-import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.*;
+
+import java.util.*;
 
 public class MainState extends GameState {
 
@@ -47,9 +47,13 @@ public class MainState extends GameState {
 
     @Override
     public void start() {
+        Bukkit.getWorlds().forEach(world -> world.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, true));
         game.createBoards();
-        renderer.updateImages();
+        plugin.resetWorld();
         ItemStack boardMap = getRenderedMapItem();
+
+
+
 
         plugin.getServer().getOnlinePlayers().forEach(player -> {
             player.setLevel(0);
@@ -57,15 +61,16 @@ public class MainState extends GameState {
             player.setFoodLevel(100);
             player.getInventory().clear();
             player.getInventory().setItemInOffHand(boardMap);
-            player.teleport(player.getWorld().getSpawnLocation());
+            player.teleport(plugin.getServer().getWorld("world_bingo").getSpawnLocation());
 
             player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1, 1);
             player.sendMessage(Localization.get(player, "game.mainstate.start"));
 
-            if (teamManager.getTeam(player) == null) {
+            if (teamManager.getTeam(player) == null && player.getGameMode() != GameMode.SPECTATOR) {
                 BingoTeam bingoTeam = teamManager.addToSmallest(player);
                 player.sendMessage(Localization.get(player, "team.auto_assign", bingoTeam.getLocalizedName(player)));
             }
+            renderer.updateImages();
 
         });
 
@@ -81,6 +86,7 @@ public class MainState extends GameState {
     public void end() {
         timerTask.cancel();
         gameLoop.cancel();
+
     }
 
     private void startTimer() {
@@ -88,6 +94,11 @@ public class MainState extends GameState {
         Scoreboard scoreboard = plugin.getServer().getScoreboardManager().getMainScoreboard();
         Objective score = scoreboard.getObjective(DisplaySlot.PLAYER_LIST) == null ? scoreboard.registerNewObjective("score","moneyboy","swag", RenderType.INTEGER) : scoreboard.getObjective(DisplaySlot.PLAYER_LIST);
         score.setDisplaySlot(DisplaySlot.PLAYER_LIST);
+
+        Objective place = scoreboard.getObjective(DisplaySlot.SIDEBAR) == null ? scoreboard.registerNewObjective("Place","moneyboy","swag", RenderType.INTEGER) : scoreboard.getObjective(DisplaySlot.SIDEBAR);
+        place.setDisplaySlot(DisplaySlot.SIDEBAR);
+        place.setDisplayName( ChatColor.GOLD + "Team position");
+        List<Team> winners = new ArrayList<>();
 
         gameLoop = plugin.getServer().getScheduler().runTaskTimer(plugin, () -> {
             plugin.getServer().getOnlinePlayers().forEach(player -> {
@@ -111,12 +122,26 @@ public class MainState extends GameState {
             });
 
             teamManager.getTeams().forEach(team -> {
-                if (game.checkWin(team)) {
+                if (winners.size() >= teamManager.getTeams().size() || winners.size() > Config.WINNING_TEAMS) {
+                    //score.unregister();
+                    score.setDisplaySlot(DisplaySlot.SIDEBAR);
+                    gameStateManager.setGameState(GameState.END_STATE);
+                }
+
+                if (game.checkWin(team) && !winners.contains(team)) {
                     Bukkit.getOnlinePlayers().forEach(player -> {
                         player.sendMessage(Localization.get(player, "game.mainstate.win", BingoTeam.get(team.getName()).getLocalizedName(player)));
                     });
-                    score.unregister();
-                    gameStateManager.setGameState(GameState.END_STATE);
+
+                    for (String player : team.getEntries()) {
+                        Player thisplayer = plugin.getServer().getPlayer(player);
+                        thisplayer.setGameMode(GameMode.SPECTATOR);
+
+                    }
+                    winners.add(team);
+                    place.getScore(team.getDisplayName()).setScore(winners.size());
+
+
                 }
             });
         }, 0, 5);
@@ -147,7 +172,30 @@ public class MainState extends GameState {
                     player.sendMessage(Localization.get(player, "game.mainstate.no_winner"));
                 });
                 gameLoop.cancel();
-                score.unregister();
+                HashMap<Team, Integer> scores = new HashMap<>();
+                Map.Entry<Team,Integer> maxEntry = null;
+
+                for (Team team : teamManager.getTeams()) {
+                    if (!winners.contains(team)) {
+                        scores.put(team,game.getBoard(team).getFoundItems());
+                    }
+                }
+
+
+                while (winners.size() < teamManager.getTeams().size() && winners.size() <= Config.WINNING_TEAMS) {
+                    for (Map.Entry<Team, Integer> entry : scores.entrySet()) {
+                        if (maxEntry == null || entry.getValue() > maxEntry.getValue()) {
+                            maxEntry = entry;
+                        }
+                    }
+                    if (maxEntry != null) {
+                        scores.remove(maxEntry.getKey());
+                        winners.add(maxEntry.getKey());
+                    }
+                }
+
+                score.setDisplaySlot(DisplaySlot.SIDEBAR);
+                //score.unregister();
                 gameStateManager.setGameState(GameState.END_STATE);
             }
         }, 0, 20);

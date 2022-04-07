@@ -7,6 +7,7 @@ import de.amin.bingo.gamestates.impl.EndState;
 import de.amin.bingo.gamestates.impl.MainState;
 import de.amin.bingo.gamestates.impl.PreState;
 import de.amin.bingo.team.TeamManager;
+import de.amin.bingo.utils.Config;
 
 public class GameStateManager {
 
@@ -38,6 +39,13 @@ public class GameStateManager {
         }
 
         currentGameState = gameStates[gameStateID];
+        if (currentGameState instanceof PreState ) {
+            ((PreState) currentGameState).setTime(Config.PRESTATE_TIME);
+        }
+
+        if (currentGameState instanceof MainState) {
+            ((MainState) currentGameState).setTime(Config.GAME_DURATION);
+        }
         currentGameState.start();
     }
 

@@ -1,16 +1,16 @@
 package de.amin.bingo.utils;
 
 import de.amin.bingo.BingoPlugin;
+import de.amin.bingo.game.board.BingoMaterial;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 
-import java.io.File;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Config {
 
     static FileConfiguration config = BingoPlugin.INSTANCE.getConfig();
-    private static final double CURRENT_CONFIG_VERSION = 1.0;
+    private static final double CURRENT_CONFIG_VERSION = 1.2;
 
     public static double CONFIG_VERSION = config.getDouble("configVersion");
     public static int PRESTATE_TIME = config.getInt("lobbyTime");
@@ -23,10 +23,30 @@ public class Config {
     public static boolean PVP = config.getBoolean("pvp");
     public static boolean WORLD_RESET = config.getBoolean("worldReset");
     public static int BOARD_SIZE = 16;
+    public static int WINNING_TEAMS = config.getInt("winningTeams") - 1;
+    public static List<BingoMaterial> ITEMS;
+
+    public Config() {
+         List<String> it = config.getStringList("items");
+         List<BingoMaterial> eit = new ArrayList<>();
+
+         for (String item : it) {
+            try {
+                BingoMaterial mat = BingoMaterial.valueOf(item);
+                eit.add(mat);
+            } catch (IllegalArgumentException ignored) {}
+         }
+
+         if (eit.size() < 16) {
+             BingoPlugin.INSTANCE.getLogger().severe("There must be at least 16 items in configuration!");
+             BingoPlugin.INSTANCE.getPluginLoader().disablePlugin(BingoPlugin.INSTANCE);
+         }
+
+         ITEMS = eit;
+    }
 
     public static boolean isDeprecated() {
-        YamlConfiguration yamlConfiguration = YamlConfiguration.loadConfiguration(new File("plugins\\Bingo\\config.yml"));
-        return CURRENT_CONFIG_VERSION>yamlConfiguration.getDouble("configVersion");
+        return CURRENT_CONFIG_VERSION>CONFIG_VERSION;
     }
 
 }

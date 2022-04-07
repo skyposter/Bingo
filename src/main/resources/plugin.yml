@@ -10,6 +10,11 @@ commands:
       - fs
     permission: bingo.fs
     description: Force Starts the Game if possible
+  newgame:
+    aliases:
+      - ng
+    permission: bingo.ng
+    description: Starts a new game
   board:
     aliases:
       - cboard

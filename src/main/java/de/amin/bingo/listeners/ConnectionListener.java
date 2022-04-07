@@ -8,6 +8,7 @@ import de.amin.bingo.gamestates.impl.PreState;
 import de.amin.bingo.team.TeamManager;
 import de.amin.bingo.utils.ItemBuilder;
 import de.amin.bingo.utils.Localization;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
@@ -18,6 +19,11 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Properties;
 
 public class ConnectionListener implements Listener {
 

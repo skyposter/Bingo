@@ -13,6 +13,11 @@ import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.scheduler.BukkitTask;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Properties;
+
 public class PreState extends GameState {
 
     private final BingoPlugin plugin;
@@ -27,6 +32,18 @@ public class PreState extends GameState {
 
     @Override
     public void start() {
+        Bukkit.getWorlds().forEach(world -> world.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, false));
+
+        File propertiesFile = new File(Bukkit.getWorldContainer(), "server.properties");
+        try (FileInputStream stream = new FileInputStream(propertiesFile)) {
+            Properties properties = new Properties();
+            properties.load(stream);
+            plugin.getServer().getOnlinePlayers().forEach(player -> player.teleport(plugin.getServer().getWorld(properties.get("level-name").toString()).getSpawnLocation()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
         plugin.getServer().getOnlinePlayers().forEach(ConnectionListener::setup);
         startTimer();
     }
@@ -38,6 +55,10 @@ public class PreState extends GameState {
 
     private void startTimer() {
         Server server = plugin.getServer();
+
+        WorldBorder border = server.getWorlds().get(0).getWorldBorder();
+        border.setCenter(server.getWorlds().get(0).getSpawnLocation());
+        border.setSize(32);
 
         timerTask = server.getScheduler().runTaskTimer(plugin, () -> {
             if (time > 0) {

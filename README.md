@@ -13,6 +13,7 @@
 #### /board - Prints out the Bingo Board to the chat
 #### /reroll - Rerolls all items on the Board
 #### /forcestart - Skips the Cooldown before the game
+#### /newgame - tries to start a new game
 #### /backpack - Opens the Team Backpack
 #### /teamchat - Lets you chat with your Teammates
 

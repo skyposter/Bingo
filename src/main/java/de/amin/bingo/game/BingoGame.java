@@ -15,9 +15,10 @@ public class BingoGame {
     private BingoPlugin plugin;
     private TeamManager teamManager;
     private HashMap<Team, BingoBoard> boards;
-    BingoMaterial[] items = new BingoMaterial[Config.BOARD_SIZE];
+    //BingoMaterial[] items = new BingoMaterial[Config.BOARD_SIZE];
     private BoardRenderer renderer;
     private final List<UUID> rejoinPlayer;
+    private List<BingoMaterial> itemnames = Config.ITEMS;
 
     public BingoGame(BingoPlugin plugin, TeamManager teamManager) {
         this.plugin = plugin;
@@ -27,7 +28,15 @@ public class BingoGame {
     }
 
     public void createBoards() {
+        BingoMaterial[] items = getRandomBoard();
+        teamManager.getTeams().forEach(team -> {
+            boards.put(team, new BingoBoard(items));
+        });
 
+    }
+
+    private BingoMaterial[] getRandomBoard() {
+        BingoMaterial[] items = new BingoMaterial[Config.BOARD_SIZE];
         //generation of random items
         for (int i = 0; i < items.length; i++) {
             BingoMaterial bingoMaterial = getRandomMaterial();
@@ -36,11 +45,7 @@ public class BingoGame {
             }
             items[i] = bingoMaterial;
         }
-
-        teamManager.getTeams().forEach(team -> {
-            boards.put(team, new BingoBoard(items));
-        });
-
+        return items;
     }
 
     public boolean checkWin(Team team) {
@@ -77,8 +82,8 @@ public class BingoGame {
         return boards.get(team);
     }
 
-    public BingoMaterial[] getItems() {
-        return items;
+    public BingoMaterial[] getItems(Team team) {
+        return boards.get(team).getMaterials();
     }
 
     public BingoMaterial getRandomMaterial() {
