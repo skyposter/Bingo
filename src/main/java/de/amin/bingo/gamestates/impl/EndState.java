@@ -17,7 +17,10 @@ public class EndState extends GameState {
 
     @Override
     public void start() {
-        plugin.getServer().getOnlinePlayers().forEach(player -> player.setGameMode(GameMode.SPECTATOR));
+        plugin.getServer().getOnlinePlayers().forEach(player ->  {
+            player.setGameMode(GameMode.ADVENTURE);
+            //player.setBedSpawnLocation(plugin.getServer().getWorld("world_bingo").getSpawnLocation());
+        });
 
         /*
         plugin.getServer().getOnlinePlayers().forEach(player -> {

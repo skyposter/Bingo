@@ -18,7 +18,7 @@ public class BingoGame {
     //BingoMaterial[] items = new BingoMaterial[Config.BOARD_SIZE];
     private BoardRenderer renderer;
     private final List<UUID> rejoinPlayer;
-    private List<BingoMaterial> itemnames = Config.ITEMS;
+    private final List<BingoMaterial> itemnames = Config.getItems();
 
     public BingoGame(BingoPlugin plugin, TeamManager teamManager) {
         this.plugin = plugin;
@@ -87,7 +87,7 @@ public class BingoGame {
     }
 
     public BingoMaterial getRandomMaterial() {
-        return BingoMaterial.values()[new Random().nextInt(BingoMaterial.values().length)];
+        return itemnames.get(new Random().nextInt(itemnames.size()));
     }
 
     public List<UUID> getRejoinPlayer() {

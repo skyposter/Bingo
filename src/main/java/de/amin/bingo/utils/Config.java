@@ -24,25 +24,26 @@ public class Config {
     public static boolean WORLD_RESET = config.getBoolean("worldReset");
     public static int BOARD_SIZE = 16;
     public static int WINNING_TEAMS = config.getInt("winningTeams") - 1;
-    public static List<BingoMaterial> ITEMS;
+    public static List<String> ITEMS = config.getStringList("items");
 
-    public Config() {
-         List<String> it = config.getStringList("items");
-         List<BingoMaterial> eit = new ArrayList<>();
 
-         for (String item : it) {
+    public static List<BingoMaterial> getItems() {
+        List<String> it = ITEMS;
+        List<BingoMaterial> eit = new ArrayList<>();
+
+        for (String item : it) {
             try {
                 BingoMaterial mat = BingoMaterial.valueOf(item);
                 eit.add(mat);
             } catch (IllegalArgumentException ignored) {}
-         }
+        }
 
-         if (eit.size() < 16) {
-             BingoPlugin.INSTANCE.getLogger().severe("There must be at least 16 items in configuration!");
-             BingoPlugin.INSTANCE.getPluginLoader().disablePlugin(BingoPlugin.INSTANCE);
-         }
+        if (eit.size() < 16) {
+            BingoPlugin.INSTANCE.getLogger().severe("There must be at least 16 items in configuration!");
+            BingoPlugin.INSTANCE.getPluginLoader().disablePlugin(BingoPlugin.INSTANCE);
+        }
 
-         ITEMS = eit;
+        return eit;
     }
 
     public static boolean isDeprecated() {

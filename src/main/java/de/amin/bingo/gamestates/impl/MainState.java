@@ -62,11 +62,12 @@ public class MainState extends GameState {
             player.getInventory().clear();
             player.getInventory().setItemInOffHand(boardMap);
             player.teleport(plugin.getServer().getWorld("world_bingo").getSpawnLocation());
+            player.setBedSpawnLocation(plugin.getServer().getWorld("world_bingo").getSpawnLocation());
 
             player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1, 1);
             player.sendMessage(Localization.get(player, "game.mainstate.start"));
 
-            if (teamManager.getTeam(player) == null && player.getGameMode() != GameMode.SPECTATOR) {
+            if (teamManager.getTeam(player) == null) {
                 BingoTeam bingoTeam = teamManager.addToSmallest(player);
                 player.sendMessage(Localization.get(player, "team.auto_assign", bingoTeam.getLocalizedName(player)));
             }
@@ -84,20 +85,22 @@ public class MainState extends GameState {
 
     @Override
     public void end() {
-        timerTask.cancel();
-        gameLoop.cancel();
-
+        if (timerTask != null) {
+            timerTask.cancel();
+        }
+        if (gameLoop != null) {
+            gameLoop.cancel();
+        }
     }
 
     private void startTimer() {
 
         Scoreboard scoreboard = plugin.getServer().getScoreboardManager().getMainScoreboard();
-        Objective score = scoreboard.getObjective(DisplaySlot.PLAYER_LIST) == null ? scoreboard.registerNewObjective("score","moneyboy","swag", RenderType.INTEGER) : scoreboard.getObjective(DisplaySlot.PLAYER_LIST);
+        Objective score = scoreboard.getObjective(DisplaySlot.PLAYER_LIST) == null ? scoreboard.registerNewObjective("score","dummy","Successfull tasks", RenderType.INTEGER) : scoreboard.getObjective(DisplaySlot.PLAYER_LIST);
         score.setDisplaySlot(DisplaySlot.PLAYER_LIST);
 
-        Objective place = scoreboard.getObjective(DisplaySlot.SIDEBAR) == null ? scoreboard.registerNewObjective("Place","moneyboy","swag", RenderType.INTEGER) : scoreboard.getObjective(DisplaySlot.SIDEBAR);
+        Objective place = scoreboard.getObjective(DisplaySlot.SIDEBAR) == null ? scoreboard.registerNewObjective("Place","dummy",ChatColor.GOLD + "Team position", RenderType.INTEGER) : scoreboard.getObjective(DisplaySlot.SIDEBAR);
         place.setDisplaySlot(DisplaySlot.SIDEBAR);
-        place.setDisplayName( ChatColor.GOLD + "Team position");
         List<Team> winners = new ArrayList<>();
 
         gameLoop = plugin.getServer().getScheduler().runTaskTimer(plugin, () -> {
@@ -168,9 +171,6 @@ public class MainState extends GameState {
 
                 time--;
             } else {
-                plugin.getServer().getOnlinePlayers().forEach(player -> {
-                    player.sendMessage(Localization.get(player, "game.mainstate.no_winner"));
-                });
                 gameLoop.cancel();
                 HashMap<Team, Integer> scores = new HashMap<>();
                 Map.Entry<Team,Integer> maxEntry = null;
@@ -181,6 +181,11 @@ public class MainState extends GameState {
                     }
                 }
 
+                Bukkit.getOnlinePlayers().forEach(player -> {
+                    for (Map.Entry<Team, Integer> entry : scores.entrySet()) {
+                        player.sendMessage(BingoTeam.get(entry.getKey().getName()).getLocalizedName(player) + "[" + entry.getValue() + "]");
+                    }
+                });
 
                 while (winners.size() < teamManager.getTeams().size() && winners.size() <= Config.WINNING_TEAMS) {
                     for (Map.Entry<Team, Integer> entry : scores.entrySet()) {
@@ -191,10 +196,10 @@ public class MainState extends GameState {
                     if (maxEntry != null) {
                         scores.remove(maxEntry.getKey());
                         winners.add(maxEntry.getKey());
+                        place.getScore(maxEntry.getKey().getDisplayName()).setScore(winners.size());
                     }
                 }
 
-                score.setDisplaySlot(DisplaySlot.SIDEBAR);
                 //score.unregister();
                 gameStateManager.setGameState(GameState.END_STATE);
             }
