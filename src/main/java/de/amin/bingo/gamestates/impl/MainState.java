@@ -200,7 +200,7 @@ public class MainState extends GameState {
                     }
                 }
 
-                //score.unregister();
+                score.unregister();
                 gameStateManager.setGameState(GameState.END_STATE);
             }
         }, 0, 20);

@@ -12,6 +12,10 @@ import net.md_5.bungee.api.chat.ComponentBuilder;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.scoreboard.DisplaySlot;
+import org.bukkit.scoreboard.Objective;
+import org.bukkit.scoreboard.RenderType;
+import org.bukkit.scoreboard.Scoreboard;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -42,6 +46,13 @@ public class PreState extends GameState {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        Scoreboard scoreboard = plugin.getServer().getScoreboardManager().getMainScoreboard();
+        Objective place = scoreboard.getObjective(DisplaySlot.SIDEBAR) == null ? scoreboard.registerNewObjective("Place","dummy",ChatColor.GOLD + "Team position", RenderType.INTEGER) : scoreboard.getObjective(DisplaySlot.SIDEBAR);
+        Objective score = scoreboard.getObjective(DisplaySlot.PLAYER_LIST) == null ? scoreboard.registerNewObjective("score","dummy","Successfull tasks", RenderType.INTEGER) : scoreboard.getObjective(DisplaySlot.PLAYER_LIST);
+        place.unregister();
+        score.unregister();
+
 
 
         plugin.getServer().getOnlinePlayers().forEach(ConnectionListener::setup);
