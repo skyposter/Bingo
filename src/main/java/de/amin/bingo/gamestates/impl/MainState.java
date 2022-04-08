@@ -132,7 +132,7 @@ public class MainState extends GameState {
 
                     for (Team wteam : teamManager.getTeams()) {
                         if (wteam.getSize() > 0) {
-                            scores.put(team,game.getBoard(wteam).getFoundItems());
+                            scores.put(wteam,game.getBoard(wteam).getFoundItems());
                         }
                     }
 
