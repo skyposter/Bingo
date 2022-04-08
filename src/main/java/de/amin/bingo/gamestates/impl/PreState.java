@@ -48,8 +48,8 @@ public class PreState extends GameState {
         }
 
         Scoreboard scoreboard = plugin.getServer().getScoreboardManager().getMainScoreboard();
-        Objective place = scoreboard.getObjective(DisplaySlot.SIDEBAR) == null ? scoreboard.registerNewObjective("Place","dummy",ChatColor.GOLD + "Team position", RenderType.INTEGER) : scoreboard.getObjective(DisplaySlot.SIDEBAR);
-        Objective score = scoreboard.getObjective(DisplaySlot.PLAYER_LIST) == null ? scoreboard.registerNewObjective("score","dummy","Successfull tasks", RenderType.INTEGER) : scoreboard.getObjective(DisplaySlot.PLAYER_LIST);
+        Objective place = scoreboard.getObjective("Place") == null ? scoreboard.registerNewObjective("Place","dummy",ChatColor.GOLD + "Team position", RenderType.INTEGER) : scoreboard.getObjective("Place");
+        Objective score = scoreboard.getObjective("score") == null ? scoreboard.registerNewObjective("score","dummy","Successfull tasks", RenderType.INTEGER) : scoreboard.getObjective("score");
         place.unregister();
         score.unregister();
 
@@ -74,6 +74,9 @@ public class PreState extends GameState {
         timerTask = server.getScheduler().runTaskTimer(plugin, () -> {
             if (time > 0) {
                 if (server.getOnlinePlayers().size() >= Config.MIN_PLAYERS) {
+                    if (time == Config.FORCESTART_TIME) {
+                        plugin.resetWorld();
+                    }
                     server.getOnlinePlayers().forEach(player -> {
 
                         switch (time) {

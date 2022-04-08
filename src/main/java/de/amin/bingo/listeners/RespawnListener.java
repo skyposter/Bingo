@@ -19,7 +19,7 @@ public class RespawnListener implements Listener {
     @EventHandler
     public void onRespawn(PlayerRespawnEvent e){
         if (gameStateManager.getCurrentGameState() instanceof MainState) {
-            e.getPlayer().teleport(plugin.getServer().getWorld("world_bingo").getSpawnLocation());
+            e.setRespawnLocation(plugin.getServer().getWorld("world_bingo").getSpawnLocation());
         }
     }
 

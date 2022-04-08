@@ -49,7 +49,6 @@ public class MainState extends GameState {
     public void start() {
         Bukkit.getWorlds().forEach(world -> world.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, true));
         game.createBoards();
-        plugin.resetWorld();
         ItemStack boardMap = getRenderedMapItem();
 
 
@@ -96,11 +95,13 @@ public class MainState extends GameState {
     private void startTimer() {
 
         Scoreboard scoreboard = plugin.getServer().getScoreboardManager().getMainScoreboard();
-        Objective score = scoreboard.getObjective(DisplaySlot.PLAYER_LIST) == null ? scoreboard.registerNewObjective("score","dummy","Successfull tasks", RenderType.INTEGER) : scoreboard.getObjective(DisplaySlot.PLAYER_LIST);
-        score.setDisplaySlot(DisplaySlot.PLAYER_LIST);
 
-        Objective place = scoreboard.getObjective(DisplaySlot.SIDEBAR) == null ? scoreboard.registerNewObjective("Place","dummy",ChatColor.GOLD + "Team position", RenderType.INTEGER) : scoreboard.getObjective(DisplaySlot.SIDEBAR);
+        Objective place = scoreboard.getObjective("Place") == null ? scoreboard.registerNewObjective("Place","dummy",ChatColor.GOLD + "Team position", RenderType.INTEGER) : scoreboard.getObjective("Place");
+        Objective score = scoreboard.getObjective("score") == null ? scoreboard.registerNewObjective("score","dummy","Successfull tasks", RenderType.INTEGER) : scoreboard.getObjective("score");
+
+        score.setDisplaySlot(DisplaySlot.PLAYER_LIST);
         place.setDisplaySlot(DisplaySlot.SIDEBAR);
+
         List<Team> winners = new ArrayList<>();
 
         gameLoop = plugin.getServer().getScheduler().runTaskTimer(plugin, () -> {
@@ -125,7 +126,7 @@ public class MainState extends GameState {
             });
 
             teamManager.getTeams().forEach(team -> {
-                if (winners.size() >= teamManager.getTeams().size() || winners.size() > Config.WINNING_TEAMS) {
+                if (winners.size() >= plugin.getServer().getOnlinePlayers().size() || winners.size() > Config.WINNING_TEAMS) {
                     //score.unregister();
                     score.setDisplaySlot(DisplaySlot.SIDEBAR);
                     gameStateManager.setGameState(GameState.END_STATE);
@@ -176,9 +177,11 @@ public class MainState extends GameState {
                 Map.Entry<Team,Integer> maxEntry = null;
 
                 for (Team team : teamManager.getTeams()) {
-                    if (!winners.contains(team)) {
+                    if (team.getSize() > 0) {
                         scores.put(team,game.getBoard(team).getFoundItems());
                     }
+
+
                 }
 
                 Bukkit.getOnlinePlayers().forEach(player -> {
@@ -187,14 +190,15 @@ public class MainState extends GameState {
                     }
                 });
 
-                while (winners.size() < teamManager.getTeams().size() && winners.size() <= Config.WINNING_TEAMS) {
+                while (winners.size() < scores.size() && winners.size() <= Config.WINNING_TEAMS) {
                     for (Map.Entry<Team, Integer> entry : scores.entrySet()) {
                         if (maxEntry == null || entry.getValue() > maxEntry.getValue()) {
-                            maxEntry = entry;
+                            if (!winners.contains(entry.getKey())) {
+                                maxEntry = entry;
+                            }
                         }
                     }
                     if (maxEntry != null) {
-                        scores.remove(maxEntry.getKey());
                         winners.add(maxEntry.getKey());
                         place.getScore(maxEntry.getKey().getDisplayName()).setScore(winners.size());
                     }
