@@ -127,8 +127,20 @@ public class MainState extends GameState {
 
             teamManager.getTeams().forEach(team -> {
                 if (winners.size() >= plugin.getServer().getOnlinePlayers().size() || winners.size() > Config.WINNING_TEAMS) {
-                    //score.unregister();
-                    score.setDisplaySlot(DisplaySlot.SIDEBAR);
+                    gameLoop.cancel();
+                    HashMap<Team, Integer> scores = new HashMap<>();
+
+                    for (Team wteam : teamManager.getTeams()) {
+                        if (team.getSize() > 0) {
+                            scores.put(team,game.getBoard(wteam).getFoundItems());
+                        }
+                    }
+
+                    Bukkit.getOnlinePlayers().forEach(player -> {
+                        for (Map.Entry<Team, Integer> entry : scores.entrySet()) {
+                            player.sendMessage(BingoTeam.get(entry.getKey().getName()).getLocalizedName(player) + "[" + entry.getValue() + "]");
+                        }
+                    });
                     gameStateManager.setGameState(GameState.END_STATE);
                 }
 
