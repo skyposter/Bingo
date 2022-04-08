@@ -127,20 +127,6 @@ public class MainState extends GameState {
 
             teamManager.getTeams().forEach(team -> {
                 if (winners.size() >= plugin.getServer().getOnlinePlayers().size() || winners.size() > Config.WINNING_TEAMS) {
-                    gameLoop.cancel();
-                    HashMap<Team, Integer> scores = new HashMap<>();
-
-                    for (Team wteam : teamManager.getTeams()) {
-                        if (wteam.getSize() > 0) {
-                            scores.put(wteam,game.getBoard(wteam).getFoundItems());
-                        }
-                    }
-
-                    Bukkit.getOnlinePlayers().forEach(player -> {
-                        for (Map.Entry<Team, Integer> entry : scores.entrySet()) {
-                            player.sendMessage(BingoTeam.get(entry.getKey().getName()).getLocalizedName(player) + "[" + entry.getValue() + "]");
-                        }
-                    });
                     gameStateManager.setGameState(GameState.END_STATE);
                 }
 
@@ -196,12 +182,6 @@ public class MainState extends GameState {
 
                 }
 
-                Bukkit.getOnlinePlayers().forEach(player -> {
-                    for (Map.Entry<Team, Integer> entry : scores.entrySet()) {
-                        player.sendMessage(BingoTeam.get(entry.getKey().getName()).getLocalizedName(player) + "[" + entry.getValue() + "]");
-                    }
-                });
-
                 while (winners.size() < scores.size() && winners.size() <= Config.WINNING_TEAMS) {
                     for (Map.Entry<Team, Integer> entry : scores.entrySet()) {
                         if (maxEntry == null || entry.getValue() > maxEntry.getValue()) {
@@ -215,8 +195,6 @@ public class MainState extends GameState {
                         place.getScore(maxEntry.getKey().getDisplayName()).setScore(winners.size());
                     }
                 }
-
-                score.unregister();
                 gameStateManager.setGameState(GameState.END_STATE);
             }
         }, 0, 20);

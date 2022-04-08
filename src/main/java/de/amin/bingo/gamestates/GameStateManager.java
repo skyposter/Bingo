@@ -25,7 +25,7 @@ public class GameStateManager {
         gameStates = new GameState[3];
         gameStates[GameState.PRE_STATE] = new PreState(plugin, this);
         gameStates[GameState.MAIN_STATE] = new MainState(plugin, this, game, renderer, this.teamManager);
-        gameStates[GameState.END_STATE] = new EndState(plugin);
+        gameStates[GameState.END_STATE] = new EndState(plugin, game, this.teamManager);
     }
 
     /**
@@ -34,6 +34,9 @@ public class GameStateManager {
      * @param gameStateID The ID of the new GameState. Use the static Integers of {@link GameState}
      */
     public void setGameState(int gameStateID) {
+        if (gameStates[gameStateID] == currentGameState ) {
+            return;
+        }
         if (currentGameState != null) {
             currentGameState.end();
         }
