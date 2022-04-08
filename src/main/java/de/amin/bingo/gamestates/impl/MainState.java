@@ -131,7 +131,7 @@ public class MainState extends GameState {
                     HashMap<Team, Integer> scores = new HashMap<>();
 
                     for (Team wteam : teamManager.getTeams()) {
-                        if (team.getSize() > 0) {
+                        if (wteam.getSize() > 0) {
                             scores.put(team,game.getBoard(wteam).getFoundItems());
                         }
                     }
